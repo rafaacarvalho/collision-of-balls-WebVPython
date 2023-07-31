@@ -1,0 +1,80 @@
+from visual import *
+
+# Definir as constantes
+G = 9.81  # Aceleração da gravidade
+dt = 0.01  # Intervalo de tempo
+
+# Definir as paredes laterais e superior
+parede_esq = box(pos=vector(-6, 0, 0), size=vector(0.2, 12, 12), color=color.gray(0.7))
+parede_dir = box(pos=vector(6, 0, 0), size=vector(0.2, 12, 12), color=color.gray(0.7))
+parede_cima = box(pos=vector(0, 6, 0), size=vector(12, 0.2, 12), color=color.gray(0.7))
+parede_baixo = box(pos=vector(0, -6, 0), size=vector(12, 0.2, 12), color=color.gray(0.7))
+parede_tras = box(pos=vector(0, 0, -6), size=vector(12, 12, 0.2), color=color.gray(0.7))
+
+# Definir as bolas
+bola1 = sphere(pos=vector(-4, -2, 0), radius=0.5, color=color.red, massa=5.0, velocidade=vector(10, 0, -5))
+bola2 = sphere(pos=vector(-2, -2, 0), radius=0.9, color=color.green, massa=10.0, velocidade=vector(0, 10, -5))
+bola3 = sphere(pos=vector(2, -2, 0), radius=0.4, color=color.blue, massa=2.0, velocidade=vector(-10, 0, 5))
+bola4 = sphere(pos=vector(4, -2, 0), radius=0.7, color=color.orange, massa=8.0, velocidade=vector(0, -10, 5))
+
+bolas = [bola1, bola2, bola3, bola4]
+
+# Definir as funções
+def atualizar_velocidade(bola1, bola2):
+    u1 = bola1.velocidade
+    u2 = bola2.velocidade
+    m1 = bola1.massa
+    m2 = bola2.massa
+    v1_atual = (m1 - m2) / (m1 + m2) * u1 + (2 * m2) / (m1 + m2) * u2
+    v2_atual = (m2 - m1) / (m1 + m2) * u2 + (2 * m1) / (m1 + m2) * u1
+    bola1.velocidade = v1_atual
+    bola2.velocidade = v2_atual
+
+def atualizar_posicao(bola):
+    bola.pos = bola.pos + bola.velocidade * dt + 0.5 * vector(0, -9.81, 0) * (dt*dt)
+
+
+# Definir o loop principal
+while True:
+    rate(100)
+
+    # Verificar as colisões entre as bolas
+    for i in range(len(bolas)):
+        for j in range(i + 1, len(bolas)):
+            if mag(bolas[i].pos - bolas[j].pos) < (bolas[i].radius + bolas[j].radius):
+                atualizar_velocidade(bolas[i], bolas[j])
+
+    # Atualizar a velocidade de cada bola com a gravidade
+    g = vector(0, -G * bola1.massa, 0)
+    for bola in bolas:
+        bola.velocidade += g * dt
+
+    # Atualizar a posição de cada bola
+    for bola in bolas:
+        atualizar_posicao(bola)
+
+    # Verificar se as bolas colidem com as paredes
+    for bola in bolas:
+        # Eixo X
+        if bola.pos.x + bola.radius > 6 and bola.velocidade.x > 0:
+            bola.velocidade.x *= -1
+        if bola.pos.x - bola.radius < -6 and bola.velocidade.x < 0:
+            bola.velocidade.x *= -1
+        # Eixo Y
+        if bola.pos.y + bola.radius > 6 and bola.velocidade.y > 0:
+            bola.velocidade.y *= -1
+        if bola.pos.y - bola.radius < -6 and bola.velocidade.y < 0:
+            bola.velocidade.y *= -1
+        # Garante que a bola permanece acima da parede inferior.
+            bola.pos.y = parede_baixo.pos.y + parede_baixo.size.y / 2 + bola.radius
+        # Eixo Z
+        if bola.pos.z + bola.radius > 6 and bola.velocidade.z > 0:
+            bola.velocidade.z *= -1
+        if bola.pos.z - bola.radius < -6 and bola.velocidade.z < 0:
+            bola.velocidade.z *= -1
+        
+            
+
+        
+        
+
